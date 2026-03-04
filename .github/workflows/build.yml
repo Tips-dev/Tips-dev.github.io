@@ -2,19 +2,27 @@ name: Build site from CSV
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: build-site-main
+  cancel-in-progress: true
+
 jobs:
   build:
+    # Prevent infinite loop when the workflow pushes a commit
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,11 +35,29 @@ jobs:
       - name: Generate pages
         run: python tools/generate.py
 
+      - name: Ensure GitHub Pages does not run Jekyll
+        run: |
+          touch site/.nojekyll
+
+      - name: Validate sitemap.xml is well-formed XML
+        run: |
+          python - << 'PY'
+          import xml.etree.ElementTree as ET
+          ET.parse("site/sitemap.xml")
+          print("✅ sitemap.xml is well-formed XML")
+          PY
+
       - name: Publish generated site to root
         run: |
-          rm -rf checklists robots.txt sitemap.xml index.html
+          rm -rf checklists robots.txt sitemap.xml index.html .nojekyll
           cp -R site/* .
           rm -rf site
+
+      - name: Debug: show first lines of deployed sitemap.xml
+        run: |
+          echo "----- sitemap.xml head -----"
+          head -n 20 sitemap.xml
+          echo "----------------------------"
 
       - name: Commit generated files
         run: |
