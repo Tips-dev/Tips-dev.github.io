@@ -3,7 +3,7 @@ from datetime import datetime
 
 SITE_NAME = "ChecklistVault"
 BASE_URL = ""  # leave blank for relative links on GitHub Pages
-INPUT_CSV = "checklists.csv"
+INPUT_CSV = "checklists_generated.csv"
 OUT_DIR = "site"
 
 def slugify(s: str) -> str:
