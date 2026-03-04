@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Checklist</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+font-family:Arial;
+max-width:700px;
+margin:auto;
+padding:20px;
+}
+
+h1{
+margin-bottom:10px;
+}
+
+ul{
+padding-left:20px;
+}
+
+li{
+margin-bottom:6px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1 id="title"></h1>
+<p id="intro"></p>
+
+<h2 id="section1title"></h2>
+<ul id="section1list"></ul>
+
+<h2 id="section2title"></h2>
+<ul id="section2list"></ul>
+
+<script>
+
+function getSlug(){
+const params = new URLSearchParams(window.location.search);
+return params.get("slug");
+}
+
+async function loadChecklist(){
+
+const slug = getSlug();
+
+const response = await fetch('checklists.csv');
+const text = await response.text();
+
+const rows = text.split('\n').slice(1);
+
+rows.forEach(row=>{
+
+const cols = row.split(',');
+
+if(cols[0] === slug){
+
+document.getElementById("title").innerText = cols[1];
+document.getElementById("intro").innerText = cols[3];
+
+document.getElementById("section1title").innerText = cols[4];
+document.getElementById("section2title").innerText = cols[6];
+
+const list1 = cols[5].split('|');
+const list2 = cols[7].split('|');
+
+list1.forEach(item=>{
+const li=document.createElement("li");
+li.textContent=item.trim();
+document.getElementById("section1list").appendChild(li);
+});
+
+list2.forEach(item=>{
+const li=document.createElement("li");
+li.textContent=item.trim();
+document.getElementById("section2list").appendChild(li);
+});
+
+}
+
+});
+
+}
+
+loadChecklist();
+
+</script>
+
+</body>
+</html>
