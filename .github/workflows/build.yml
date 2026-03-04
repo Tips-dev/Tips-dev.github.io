@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Prevent infinite loop when the workflow pushes a commit
+    # Prevent infinite loop when workflow commits files
     if: github.actor != 'github-actions[bot]'
 
     steps:
@@ -40,11 +40,12 @@ jobs:
         run: touch site/.nojekyll
 
       - name: Validate sitemap
-        run: python -c "import xml.etree.ElementTree as ET; ET.parse('site/sitemap.xml'); print('✅ sitemap.xml is valid XML')"
+        run: python -c "import xml.etree.ElementTree as ET; ET.parse('site/sitemap.xml'); print('Sitemap XML valid')"
 
       - name: Copy generated site to root
         run: |
-          rm -rf checklists robots.txt sitemap.xml index.html .nojekyll
+          rm -rf checklists
+          rm -f robots.txt sitemap.xml sitemap-pages-*.xml index.html .nojekyll
           cp -R site/* .
           rm -rf site
 
@@ -52,7 +53,6 @@ jobs:
         run: |
           echo "----- sitemap.xml head -----"
           ls -la
-          test -f sitemap.xml
           head -n 20 sitemap.xml
           echo "----------------------------"
 
@@ -61,5 +61,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Auto build site" || echo "No changes to commit"
+          git commit -m "Auto build site" || echo "No changes"
           git push
