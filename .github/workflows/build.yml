@@ -2,20 +2,28 @@ name: Build site from CSV
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: build-site-main
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # Prevent infinite loop when the workflow pushes a commit
     if: github.actor != 'github-actions[bot]'
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -32,7 +40,7 @@ jobs:
         run: touch site/.nojekyll
 
       - name: Validate sitemap
-        run: python -c "import xml.etree.ElementTree as ET; ET.parse('site/sitemap.xml')"
+        run: python -c "import xml.etree.ElementTree as ET; ET.parse('site/sitemap.xml'); print('✅ sitemap.xml is valid XML')"
 
       - name: Copy generated site to root
         run: |
@@ -41,4 +49,17 @@ jobs:
           rm -rf site
 
       - name: Preview sitemap
-        run: head -n 20 sitemap
+        run: |
+          echo "----- sitemap.xml head -----"
+          ls -la
+          test -f sitemap.xml
+          head -n 20 sitemap.xml
+          echo "----------------------------"
+
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Auto build site" || echo "No changes to commit"
+          git push
