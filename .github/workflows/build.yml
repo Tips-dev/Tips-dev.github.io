@@ -38,6 +38,15 @@ jobs:
       - name: Validate sitemap XML
         run: python -c "import xml.etree.ElementTree as ET; ET.parse('site/sitemap.xml'); print('Sitemap XML valid')"
 
+      - name: Debug output files
+        run: |
+          echo "=== site dir ==="
+          ls -la site
+          echo "=== sitemap.xml head ==="
+          head -n 30 site/sitemap.xml
+          echo "=== sitemap chunk list ==="
+          ls -la site/sitemap-pages-*.xml || true
+          
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
