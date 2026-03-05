@@ -5,7 +5,7 @@ import html
 from datetime import datetime
 from xml.sax.saxutils import escape as xml_escape
 
-BASE_URL = "https://tips-dev.github.io"
+BASE_URL = "https://tips-dev.github.io/"
 INPUT_CSV = "checklists_generated.csv"
 OUT_DIR = "site"
 
